@@ -1,0 +1,235 @@
+
+#include <Geode/Geode.hpp>
+#include <base64.h>
+#include <tinyxml2.h>
+#include <fstream>
+
+#include "file-dialog.hpp"
+
+USE_GEODE_NAMESPACE();
+
+namespace {
+	class LevelImportCallback : public cocos2d::CCNode {
+    public:
+        void onLevelImported(cocos2d::CCNode*) {
+            goToScene();
+        }
+
+        void goToScene() {
+            if (toLevel_ == nullptr) {
+                return;
+            }
+
+            EditLevelLayer::scene(toLevel_);
+        }
+
+        LevelImportCallback() : toLevel_(nullptr) {}
+
+        CC_SYNTHESIZE(GJGameLevel*, toLevel_, ToLevel);
+
+        CREATE_FUNC(LevelImportCallback)
+    };
+
+	std::string createLevelExportString(GJGameLevel* level)
+	{
+		// port of gdshare::exportLevel function at HJfod/GDShare-mod@38f00df3d1af115fb2ddca30b02d6acd12f89661/src/utils/gdshare.cpp#L150
+		auto song = std::string();
+
+		if (level->m_songID != 0)
+		{
+				std::stringstream song_stream;
+				song_stream << "<k>k45</k><i>" << level->m_songID << "</i>";
+				song = song_stream.str();
+		}
+		else
+		{
+				std::stringstream song_stream;
+				song_stream << "<k>k8</k><i>" << level->m_audioTrack << "</i>";
+				song = song_stream.str();
+		}
+
+		// i love stringstreams
+		// and also strings in general
+
+		// gdshare double encodes description strings, and we have to replicate this
+		auto desc = base64_encode(level->m_levelDesc);
+
+//            auto level_string = ptr_to_offset<std::string>(level, 0xF8)->c_str();
+//            spdlog::get("global")->info("level_string `{}`", level_string);
+
+		auto data = cocos2d::CCString::createWithFormat(R"(<d>
+<k>kCEK</k>
+<i>4</i>
+<k>k2</k>
+<s>%s</s>
+<k>k3</k>
+<s>%s</s>
+<k>k4</k>
+<s>%s</s>
+%s
+<k>k13</k>
+<t/>
+<k>k21</k>
+<i>2</i>
+<k>k50</k>
+<i>24</i>
+</d>)", level->m_levelName.c_str(), desc.c_str(), level->m_levelString.c_str(), song.c_str());
+
+		return data->getCString();
+	}
+}
+
+class $modify(EditLevelLayerMod, EditLevelLayer) {
+  void onExportFile(cocos2d::CCObject*) {
+		// todo: fix EditLevelLayer offset in Geode
+		// calculated offset 408
+		// real offset 0x1a0 (416)
+
+		auto level = this->m_level;
+		if (level->m_objectCount == 0)
+		{
+			FLAlertLayer::create(nullptr, "Empty", "You can't export an empty level.", "OK", nullptr, 300.0f)->show();
+			return;
+		}
+
+		try {
+			showSaveDialogCxx(std::string(level->m_levelName.c_str()) + ".gmd", [level](const std::string& path) {
+					std::ofstream out(path);
+					out << createLevelExportString(level);
+			});
+		} catch (const std::exception& e) {
+			// this is what happens when your offset is off
+			FLAlertLayer::create(nullptr, "oh no", "Exception found in save dialog. It's probably a bad_alloc.", "OK", nullptr, 300.0f)->show();
+		}
+	}
+
+	bool init(GJGameLevel* lvl) {
+		if (EditLevelLayer::init(lvl)) {
+			auto share_sprite = cocos2d::CCSprite::createWithSpriteFrameName("GJ_downloadBtn_001.png");
+
+			auto share_btn = CCMenuItemSpriteExtra::create(
+							share_sprite, nullptr, this,
+							static_cast<cocos2d::SEL_MenuHandler>(&EditLevelLayerMod::onExportFile));
+
+			auto menu = cocos2d::CCMenu::createWithItem(share_btn);
+			this->addChild(menu, 1);
+
+			auto director = cocos2d::CCDirector::sharedDirector();
+
+			auto pos_x = director->getScreenRight() - 23.0f;
+			auto pos_y = director->getScreenBottom() + 23.0f;
+
+			menu->setPosition(pos_x, pos_y);
+
+			return true;
+		}
+
+		return false;
+	}
+};
+
+class $modify(LevelBrowserLayerMod, LevelBrowserLayer) {
+	void onImport(cocos2d::CCObject*) {
+		showOpenDialogCxx([](const std::string& path) {
+			// this was ported from the 1.9 code
+			auto doc = tinyxml2::XMLDocument();
+			if (doc.LoadFile(path.c_str()) != tinyxml2::XML_SUCCESS) {
+					FLAlertLayer::create(
+									nullptr,
+									"Import Failed",
+									"A valid file was not provided for import.",
+									"OK", nullptr)->show();
+					return;
+			}
+
+			// plist parsing, tinyxml style
+			// there's no validation on this at all. enjoy
+
+			auto level = GameLevelManager::sharedState()->createNewLevel();
+
+			auto is_new_level = false;
+
+			auto document = doc.FirstChildElement("d");
+			for (auto elem = document->FirstChildElement(); elem != nullptr; elem = elem->NextSiblingElement()) {
+					if (strcmp(elem->Value(), "k") == 0) {
+							auto key = elem->GetText();
+
+							elem = elem->NextSiblingElement();
+							if (elem == nullptr) {
+									break;
+							}
+
+							auto value = elem->GetText();
+							if (value == nullptr) {
+									continue;
+							}
+
+							// what nice parsing we have
+							if (strcmp(key, "kCEK") == 0) {
+									auto obj_type = atoi(value);
+									if (obj_type != 4) {
+											FLAlertLayer::create(
+															nullptr,
+															"Import Failed",
+															"A valid level was not provided for import.",
+															"OK", nullptr)->show();
+											return;
+									}
+							} else if (strcmp(key, "k2") == 0) {
+									level->m_levelName = value;
+							} else if (strcmp(key, "k3") == 0) {
+									// undo the double encode
+									auto desc = base64_decode(std::string(value));
+									level->m_levelDesc = desc;
+							} else if (strcmp(key, "k4") == 0) {
+									level->m_levelString = value;
+							} else if (strcmp(key, "k8") == 0) {
+									level->m_audioTrack = atoi(value);
+							} else if (strcmp(key, "k45") == 0) {
+									level->m_songID = atoi(value);
+							}
+					}
+			}
+
+			level->m_levelType = GJLevelType::Editor;
+
+			// i'm unsure if this needs to be run on main thread
+			EditLevelLayer::scene(level);
+		});
+	}
+
+	bool init(GJSearchObject* so) {
+		if (LevelBrowserLayer::init(so)) {
+			if (so->getType() == SearchType::MyLevels) {
+				auto import_sprite = cocos2d::CCSprite::createWithSpriteFrameName(
+					"GJ_downloadBtn_001.png");
+				auto import_button = CCMenuItemSpriteExtra::create(
+								import_sprite,
+								nullptr,
+								this,
+								static_cast<cocos2d::SEL_MenuHandler>(&LevelBrowserLayerMod::onImport));
+
+				auto button_menu = cocos2d::CCMenu::createWithItem(import_button);
+/*
+				if (dynamic_cast<TextArea*>(button_menu) != nullptr) {
+						// tap new offsets the amount of children by 1
+						button_menu = reinterpret_cast<cocos2d::CCNode*>(
+										self->getChildren()->objectAtIndex(10));
+				}
+*/
+				this->addChild(button_menu);
+
+				auto director = cocos2d::CCDirector::sharedDirector();
+
+				auto pos_x = director->getScreenLeft() + 25.0f;
+				auto pos_y = (director->getScreenTop() / 2) - 50.0f;
+
+				button_menu->setPosition(pos_x, pos_y);
+			}
+
+			return true;
+		}
+
+		return false;
+	}
+};

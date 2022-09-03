@@ -1,0 +1,9 @@
+{
+	"geode": "v0.1.0",
+	"version": "v1.0.0",
+	"id": "com.zmx.gmdshare",
+	"name": "gmdshare",
+	"developer": "zmx",
+	"description": "gmd file export and import",
+	"binary": "com.zmx.gmdshare"
+}

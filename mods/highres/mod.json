@@ -1,0 +1,9 @@
+{
+	"geode": "v0.1.0",
+	"version": "v0.0.5",
+	"id": "com.zmx.highres",
+	"name": "highres",
+	"developer": "zmx",
+	"description": "",
+	"binary": "com.zmx.highres"
+}
