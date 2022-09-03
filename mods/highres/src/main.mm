@@ -56,9 +56,9 @@ static void(*s_originalInitWithFrame)(id, SEL, NSRect, NSOpenGLPixelFormat*);
 @end
 
 GEODE_API bool GEODE_CALL geode_load(Mod*) {
-    @autoreleasepool {
-        auto object = [[NeedGoodNamePlease alloc] init];
-    }
+	@autoreleasepool {
+		auto object = [[NeedGoodNamePlease alloc] init];
+	}
 
-		return true;
+	return true;
 }

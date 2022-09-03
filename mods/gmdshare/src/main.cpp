@@ -10,25 +10,25 @@ USE_GEODE_NAMESPACE();
 
 namespace {
 	class LevelImportCallback : public cocos2d::CCNode {
-    public:
-        void onLevelImported(cocos2d::CCNode*) {
-            goToScene();
-        }
+		public:
+			void onLevelImported(cocos2d::CCNode*) {
+				goToScene();
+			}
 
-        void goToScene() {
-            if (toLevel_ == nullptr) {
-                return;
-            }
+			void goToScene() {
+				if (toLevel_ == nullptr) {
+					return;
+				}
 
-            EditLevelLayer::scene(toLevel_);
-        }
+				EditLevelLayer::scene(toLevel_);
+			}
 
-        LevelImportCallback() : toLevel_(nullptr) {}
+			LevelImportCallback() : toLevel_(nullptr) {}
 
-        CC_SYNTHESIZE(GJGameLevel*, toLevel_, ToLevel);
+			CC_SYNTHESIZE(GJGameLevel*, toLevel_, ToLevel);
 
-        CREATE_FUNC(LevelImportCallback)
-    };
+			CREATE_FUNC(LevelImportCallback)
+		};
 
 	std::string createLevelExportString(GJGameLevel* level)
 	{
@@ -80,7 +80,7 @@ namespace {
 }
 
 class $modify(EditLevelLayerMod, EditLevelLayer) {
-  void onExportFile(cocos2d::CCObject*) {
+	void onExportFile(cocos2d::CCObject*) {
 		// todo: fix EditLevelLayer offset in Geode
 		// calculated offset 408
 		// real offset 0x1a0 (416)
@@ -134,12 +134,12 @@ class $modify(LevelBrowserLayerMod, LevelBrowserLayer) {
 			// this was ported from the 1.9 code
 			auto doc = tinyxml2::XMLDocument();
 			if (doc.LoadFile(path.c_str()) != tinyxml2::XML_SUCCESS) {
-					FLAlertLayer::create(
-									nullptr,
-									"Import Failed",
-									"A valid file was not provided for import.",
-									"OK", nullptr)->show();
-					return;
+				FLAlertLayer::create(
+								nullptr,
+								"Import Failed",
+								"A valid file was not provided for import.",
+								"OK", nullptr)->show();
+				return;
 			}
 
 			// plist parsing, tinyxml style
@@ -151,44 +151,44 @@ class $modify(LevelBrowserLayerMod, LevelBrowserLayer) {
 
 			auto document = doc.FirstChildElement("d");
 			for (auto elem = document->FirstChildElement(); elem != nullptr; elem = elem->NextSiblingElement()) {
-					if (strcmp(elem->Value(), "k") == 0) {
-							auto key = elem->GetText();
+				if (strcmp(elem->Value(), "k") == 0) {
+					auto key = elem->GetText();
 
-							elem = elem->NextSiblingElement();
-							if (elem == nullptr) {
-									break;
-							}
-
-							auto value = elem->GetText();
-							if (value == nullptr) {
-									continue;
-							}
-
-							// what nice parsing we have
-							if (strcmp(key, "kCEK") == 0) {
-									auto obj_type = atoi(value);
-									if (obj_type != 4) {
-											FLAlertLayer::create(
-															nullptr,
-															"Import Failed",
-															"A valid level was not provided for import.",
-															"OK", nullptr)->show();
-											return;
-									}
-							} else if (strcmp(key, "k2") == 0) {
-									level->m_levelName = value;
-							} else if (strcmp(key, "k3") == 0) {
-									// undo the double encode
-									auto desc = base64_decode(std::string(value));
-									level->m_levelDesc = desc;
-							} else if (strcmp(key, "k4") == 0) {
-									level->m_levelString = value;
-							} else if (strcmp(key, "k8") == 0) {
-									level->m_audioTrack = atoi(value);
-							} else if (strcmp(key, "k45") == 0) {
-									level->m_songID = atoi(value);
-							}
+					elem = elem->NextSiblingElement();
+					if (elem == nullptr) {
+						break;
 					}
+
+					auto value = elem->GetText();
+					if (value == nullptr) {
+						continue;
+					}
+
+					// what nice parsing we have
+					if (strcmp(key, "kCEK") == 0) {
+						auto obj_type = atoi(value);
+						if (obj_type != 4) {
+								FLAlertLayer::create(
+												nullptr,
+												"Import Failed",
+												"A valid level was not provided for import.",
+												"OK", nullptr)->show();
+								return;
+						}
+					} else if (strcmp(key, "k2") == 0) {
+						level->m_levelName = value;
+					} else if (strcmp(key, "k3") == 0) {
+						// undo the double encode
+						auto desc = base64_decode(std::string(value));
+						level->m_levelDesc = desc;
+					} else if (strcmp(key, "k4") == 0) {
+						level->m_levelString = value;
+					} else if (strcmp(key, "k8") == 0) {
+						level->m_audioTrack = atoi(value);
+					} else if (strcmp(key, "k45") == 0) {
+						level->m_songID = atoi(value);
+					}
+				}
 			}
 
 			level->m_levelType = GJLevelType::Editor;
