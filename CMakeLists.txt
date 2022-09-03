@@ -15,5 +15,4 @@ endif()
 set(GEODE_LINK_SOURCE On)
 add_subdirectory($ENV{GEODE_SDK} $ENV{GEODE_SDK}/build)
 
-add_subdirectory(mods/gmdshare)
-add_subdirectory(mods/highres)
+add_subdirectory(mods)
