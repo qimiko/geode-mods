@@ -11,7 +11,10 @@ USE_GEODE_NAMESPACE();
 
 // i didn't stole this
 void enableWantsBestResMode() {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wobjc-method-access"
 	[[NSClassFromString(@"EAGLView") sharedEGLView] setWantsBestResolutionOpenGLSurface:YES];
+#pragma clang diagnostic pop
 }
 
 static void(*s_originalInitWithFrame)(id, SEL, NSRect, NSOpenGLPixelFormat*);
