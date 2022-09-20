@@ -57,25 +57,26 @@ namespace {
 //            auto level_string = ptr_to_offset<std::string>(level, 0xF8)->c_str();
 //            spdlog::get("global")->info("level_string `{}`", level_string);
 
-		auto data = cocos2d::CCString::createWithFormat(R"(<d>
-<k>kCEK</k>
-<i>4</i>
-<k>k2</k>
-<s>%s</s>
-<k>k3</k>
-<s>%s</s>
-<k>k4</k>
-<s>%s</s>
-%s
-<k>k13</k>
-<t/>
-<k>k21</k>
-<i>2</i>
-<k>k50</k>
-<i>24</i>
-</d>)", level->m_levelName.c_str(), desc.c_str(), level->m_levelString.c_str(), song.c_str());
+		std::stringstream data_stream;
+		data_stream << "<d>";
+		data_stream << "<k>kCEK</k>";
+		data_stream << "<i>4</i>";
+		data_stream << "<k>k2</k>";
+		data_stream << "<s>" << std::string(level->m_levelName) << "</s>";
+		data_stream << "<k>k3</k>";
+		data_stream << "<s>" << desc << "</s>";
+		data_stream << "<k>k4</k>";
+		data_stream << "<s>" << std::string(level->m_levelString) << "</s>";
+		data_stream << song;
+		data_stream << "<k>k13</k>";
+		data_stream << "<t/>";
+		data_stream << "<k>k21</k>";
+		data_stream << "<i>2</i>";
+		data_stream << "<k>k50</k>";
+		data_stream << "<i>24</i>";
+		data_stream << "</d>";
 
-		return data->getCString();
+		return data_stream.str();
 	}
 }
 
