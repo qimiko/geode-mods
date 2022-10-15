@@ -1,5 +1,8 @@
-
 #include <Geode/Geode.hpp>
+#include <Geode/Modify.hpp>
+#include <Geode/modify/EditLevelLayer.hpp>
+#include <Geode/modify/LevelBrowserLayer.hpp>
+
 #include <base64.h>
 #include <tinyxml2.h>
 #include <fstream>
@@ -82,10 +85,6 @@ namespace {
 
 class $modify(EditLevelLayerMod, EditLevelLayer) {
 	void onExportFile(cocos2d::CCObject*) {
-		// todo: fix EditLevelLayer offset in Geode
-		// calculated offset 408
-		// real offset 0x1a0 (416)
-
 		auto level = this->m_level;
 		if (level->m_objectCount == 0)
 		{
