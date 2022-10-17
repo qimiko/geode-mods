@@ -86,7 +86,7 @@ namespace {
 class $modify(EditLevelLayerMod, EditLevelLayer) {
 	void onExportFile(cocos2d::CCObject*) {
 		auto level = this->m_level;
-		if (level->m_objectCount == 0)
+		if (std::string(level->m_levelString).empty())
 		{
 			FLAlertLayer::create(nullptr, "Empty", "You can't export an empty level.", "OK", nullptr, 300.0f)->show();
 			return;
