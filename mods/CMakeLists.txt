@@ -1,3 +1,4 @@
 add_subdirectory(gmdshare)
 add_subdirectory(highres)
 add_subdirectory(objbypass)
+add_subdirectory(practicemusic)

@@ -1,0 +1,9 @@
+{
+	"geode": "v0.4.0",
+	"version": "v1.0.0",
+	"id": "com.zmx.practicemusic",
+	"name": "Practice Music",
+	"developer": "zmx",
+	"description": "Practice music hack",
+	"binary": "com.zmx.practicemusic"
+}
