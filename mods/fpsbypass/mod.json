@@ -1,0 +1,9 @@
+{
+	"geode": "v0.4.0",
+	"version": "v1.0.0",
+	"id": "com.zmx.fpsbypass",
+	"name": "FPS Bypass",
+	"developer": "zmx",
+	"description": "FPS Bypass",
+	"binary": "com.zmx.fpsbypass"
+}
