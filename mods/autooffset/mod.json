@@ -1,0 +1,8 @@
+{
+	"geode":        "v0.4.0",
+	"version":      "v1.0.0",
+	"id":           "com.zmx.autooffset",
+	"name":         "autooffset",
+	"developer":    "zmx",
+	"description":  "Automatically adjusts ingame offset to audio offset"
+}
