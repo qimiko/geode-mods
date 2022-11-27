@@ -28,7 +28,7 @@ private:
 
 	// there is exactly one case when this changes during runtime
 	std::optional<AudioLatencyCache> cachedLatency_{std::nullopt};
-	static constexpr bool USE_CACHED_LATENCY = true;
+	static constexpr bool USE_CACHED_LATENCY = false;
 
 	uint32_t getAudioDeviceLatency() {
 		auto latency = 0u;
