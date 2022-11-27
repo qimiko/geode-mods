@@ -149,7 +149,10 @@ public:
 		}
 
 		auto computedLatency = computeTotalLatency();
-		cachedLatency_ = AudioLatencyCache(computedLatency, deviceId_);
+		if (USE_CACHED_LATENCY) {
+			cachedLatency_ = AudioLatencyCache(computedLatency, deviceId_);
+		}
+
 		geode::log::debug("computing totalLatency: {}0 µs", computedLatency);
 
 		return computedLatency;
