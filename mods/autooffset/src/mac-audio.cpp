@@ -9,9 +9,25 @@ class MacAudioHelper {
 private:
 	AudioDeviceID deviceId_{0};
 
-	// find out if totalLatency changes during runtime?
-	// it doesn't cost much to compute this regardless
-	std::optional<uint32_t> cachedTotalLatency_{std::nullopt};
+	class AudioLatencyCache {
+	private:
+		uint32_t totalLatency_{0};
+		AudioDeviceID deviceId_{0};
+
+	public:
+		AudioLatencyCache(AudioDeviceID deviceId, uint32_t totalLatency) : deviceId_{deviceId}, totalLatency_{totalLatency} { }
+
+		uint32_t getTotalLatency() const {
+			return totalLatency_;
+		}
+
+		AudioDeviceID getDeviceId() const {
+			return deviceId_;
+		}
+	};
+
+	// there is exactly one case when this changes during runtime
+	std::optional<AudioLatencyCache> cachedLatency_{std::nullopt};
 	static constexpr bool USE_CACHED_LATENCY = true;
 
 	uint32_t getAudioDeviceLatency() {
@@ -124,15 +140,19 @@ private:
 
 public:
 	uint32_t getTotalLatency() {
-		if (cachedTotalLatency_ && USE_CACHED_LATENCY) {
-			return *cachedTotalLatency_;
-		} else {
-			auto computedLatency = computeTotalLatency();
-			cachedTotalLatency_ = computedLatency;
-			geode::log::debug("computing totalLatency: {}0 µs", computedLatency);
-
-			return computedLatency;
+		if (cachedLatency_ && USE_CACHED_LATENCY) {
+			// use cached latency only if device hasn't changed
+			// in the future it'd be nice if I could listen to this?
+			if (cachedLatency_->getDeviceId() == getDefaultAudioDeviceId()) {
+				return cachedLatency_->getTotalLatency();
+			}
 		}
+
+		auto computedLatency = computeTotalLatency();
+		cachedLatency_ = AudioLatencyCache(computedLatency, deviceId_);
+		geode::log::debug("computing totalLatency: {}0 µs", computedLatency);
+
+		return computedLatency;
 	}
 
 	void refreshAudioDeviceId() {
