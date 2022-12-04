@@ -60,6 +60,13 @@ namespace {
 //            auto level_string = ptr_to_offset<std::string>(level, 0xF8)->c_str();
 //            spdlog::get("global")->info("level_string `{}`", level_string);
 
+		auto level_string = std::string(level->m_levelString);
+
+		// remove null if last character is null
+		if (level_string.back() == '\0') {
+			level_string.pop_back();
+		}
+
 		std::stringstream data_stream;
 		data_stream << "<d>";
 		data_stream << "<k>kCEK</k>";
@@ -69,7 +76,7 @@ namespace {
 		data_stream << "<k>k3</k>";
 		data_stream << "<s>" << desc << "</s>";
 		data_stream << "<k>k4</k>";
-		data_stream << "<s>" << std::string(level->m_levelString) << "</s>";
+		data_stream << "<s>" << level_string << "</s>";
 		data_stream << song;
 		data_stream << "<k>k13</k>";
 		data_stream << "<t/>";
