@@ -192,7 +192,7 @@ class $modify(LevelBrowserLayerMod, LevelBrowserLayer) {
 			}
 
 			level->m_levelType = GJLevelType::Editor;
-
+			level->retain();
 			// i'm unsure if this needs to be run on main thread
 			EditLevelLayer::scene(level);
 		});
