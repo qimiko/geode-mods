@@ -129,6 +129,10 @@ class $modify(LevelCellMod, LevelCell) {
 	void loadCustomLevelCell() {
 		LevelCell::loadCustomLevelCell();
 
+		if (this->m_level->m_dailyID > 0) {
+			return;
+		}
+
 		auto isRated = this->m_level->m_stars > 0;
 
 		auto widget = LevelRatingWidget::create(this->m_level->m_levelID, isRated);
