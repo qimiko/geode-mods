@@ -98,12 +98,11 @@ class LevelRatingWidget : public cocos2d::CCNode,
 
 		ratingMenu->addChild(starBtn);
 
-		likeBtn->setPosition({ -13.0f, 0.0f });
-		starBtn->setPosition({ 13.0f, 0.0f });
+		likeBtn->setPosition({ 13.0f, 0.0f });
+		starBtn->setPosition({ -13.0f, 0.0f });
 
 		if (isRated) {
 			starBtn->setVisible(false);
-			likeBtn->setPosition({ 0.0f, 0.0f });
 		}
 
 		updateRatingButtons();
@@ -130,22 +129,25 @@ class $modify(LevelCellMod, LevelCell) {
 	void loadCustomLevelCell() {
 		LevelCell::loadCustomLevelCell();
 
-		auto widget = LevelRatingWidget::create(
-			this->m_level->m_levelID, this->m_level->m_stars > 0);
+		auto isRated = this->m_level->m_stars > 0;
+
+		auto widget = LevelRatingWidget::create(this->m_level->m_levelID, isRated);
 
 		this->m_mainLayer->addChild(widget, 3);
 		widget->setPosition({ this->m_width - 40.0f, this->m_height - 15.0f });
 
-		auto ratedString = cocos2d::CCString::createWithFormat(
-				"Req: %i*", this->m_level->m_starsRequested);
-		auto ratedLabel = cocos2d::CCLabelBMFont::create(
-			ratedString->getCString(), "chatFont.fnt");
+		if (!isRated) {
+			auto ratedString = cocos2d::CCString::createWithFormat(
+					"Req: %i*", this->m_level->m_starsRequested);
+			auto ratedLabel = cocos2d::CCLabelBMFont::create(
+				ratedString->getCString(), "chatFont.fnt");
 
-		ratedLabel->setAnchorPoint({ 1.0f, 0.0f });
-		ratedLabel->setScale(0.75f);
+			ratedLabel->setAnchorPoint({ 1.0f, 0.0f });
+			ratedLabel->setScale(0.75f);
 
-		this->m_mainLayer->addChild(ratedLabel);
-		ratedLabel->setPosition({ this->m_width - 10.0f, 5.0f });
+			this->m_mainLayer->addChild(ratedLabel);
+			ratedLabel->setPosition({ this->m_width - 10.0f, 5.0f });
+		}
 	}
 };
 
